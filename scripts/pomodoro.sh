@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Run as
+# sh pomodoro.sh &
+# OR
+# TOO_EARLY=200 TOO_LATE=2000 sh pomodoro.sh
+
+
 if [ -z ${TOO_EARLY+x} ]; then
     TOO_EARLY=800
 fi
