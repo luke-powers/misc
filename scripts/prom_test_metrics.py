@@ -18,7 +18,7 @@ def emit_metric(num):
 
 
 if __name__ == '__main__':
-    start_http_server(8000)
+    start_http_server(8888)
     ctr = 0
     while True:
         emit_metric(ctr)
