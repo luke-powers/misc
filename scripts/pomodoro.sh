@@ -3,18 +3,25 @@
 # Run as
 # sh pomodoro.sh &
 # OR
-# TOO_EARLY=200 TOO_LATE=2000 sh pomodoro.sh&
+# TOO_EARLY=200 TOO_LATE=2000 WORK_DURATION=10 REST_DURATION=2 sh pomodoro.sh&
 
-
-if [ -z ${TOO_EARLY+x} ]; then
-    TOO_EARLY=800
-fi
-if [ -z ${TOO_LATE+x} ]; then
-    TOO_LATE=1900
-fi
+REST_DURATION=${REST_DURATION:-5}
+TOO_EARLY=${TOO_EARLY:-800}
+TOO_LATE=${TOO_LATE:-1900}
+WORK_DURATION=${WORK_DURATION:-20}
 
 while [ `date +%k%M` -gt $TOO_EARLY -a `date +%k%M` -lt $TOO_LATE ] ; do
-    zenity --text "Work until $((`date +%k%M` + 20))" --info --width 100 > /dev/null 2>&1 && sleep 1200
-    zenity --text "Rest until $((`date +%k%M` + 5))" --info --width 100 > /dev/null 2>&1 && sleep 300
+    next_work=$((`date +%k%M` + $WORK_DURATION))
+    next_rest=$((`date +%k%M` + $REST_DURATION))
+    if [[ $(($next_work%100/60)) > 0 ]] ; then
+        next_work=$(($next_work+40))
+    fi
+    if [[ $(($next_rest%100/60)) > 0 ]] ; then
+        next_rest=$((next_rest+40))
+    fi
+    zenity --text "Work until $next_work" --info --width 100 > /dev/null 2>&1
+    sleep $(($WORK_DURATION*60))
+    zenity --text "Rest until $next_rest" --info --width 100 > /dev/null 2>&1
+    sleep $(($REST_DURATION*60))
 done
 zenity --text "Outside of workday, done." --warning > /dev/null 2>&1
