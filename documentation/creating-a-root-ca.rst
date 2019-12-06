@@ -1,8 +1,13 @@
 Certificate Authority Setup
 ===========================
 
-This setup is a modified version of page on creating intermediate
-certs and this blog post.
+This setup is a modified version of `this page on creating
+intermediate certs
+<https://jamielinux.com/docs/openssl-certificate-authority/introduction.html>`_
+and `this blog post
+<https://deliciousbrains.com/ssl-certificate-authority-for-local-https-development/>`_
+with updated info from `this page
+<https://www.phildev.net/ssl/creating_ca.html>`_.
 
 Create the root CA
 ------------------
@@ -52,7 +57,7 @@ Create the root certificate
     -extensions v3_ca \
     -out certs/companyCA.cert
 
-This will ask for a passphrase. Use the passphrase for Root that is
+This will ask for a passphrase. Use the passphrase for *root* that is
 stored in lastpass. For all the requested info, just use the defaults
 that are provided from the conf file.
 
@@ -64,12 +69,6 @@ Verify the root cert
    openssl x509 -noout -text -in certs/companyCA.cert
 
 See `this page <https://jamielinux.com/docs/openssl-certificate-authority/create-the-root-pair.html#verify-the-root-certificate>`_ for an explanation of the output.
-
-Deploy the root cert
-~~~~~~~~~~~~~~~~~~~~
-
-This is the cert that is used in the browser or other client app that
-intends to implement tls/https.
 
 Create the intermediate CA
 --------------------------
@@ -102,7 +101,7 @@ Create the intermediate key
   chmod 400 intermediate/private/companyICA.key
 
 This will ask you for a passphrase. Use the passphrase for the
-Intermediate key that is stored in lastpass.
+*intermediate* key that is stored in lastpass.
 
 Create the Certificate Signing Request (CSR)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,9 +132,9 @@ Create the Intermediate Certificate
      -md sha256 \
      -in intermediate/csr/companyICA.csr \
      -out intermediate/certs/companyICA.cert
-   chmod 444 intermediate/certs/site-wide.cert
+   chmod 444 intermediate/certs/companyICA.cert
 
-This will ask for the root passphrase which is stored in lastpass.
+This will ask for the *root* passphrase which is stored in lastpass.
 
 Verify the Intermediate Certificate against the Root Certificate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -145,6 +144,13 @@ Verify the Intermediate Certificate against the Root Certificate
   openssl verify -CAfile certs/companyCA.cert intermediate/certs/companyICA.cert
 
 This will out put ``companyICA.cert: OK``
+
+Deploy the Intermediate Certificate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is the cert that is used in the browser or other client app that
+intends to implement tls/https.
+
 
 Create the certificate chain file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
