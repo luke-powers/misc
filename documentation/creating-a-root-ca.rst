@@ -14,10 +14,9 @@ Create root certificate directory structure::
   mkdir certs crl newcerts private
   chmod 700 private
   touch index.txt
-  echo 1000 > serial
 
-The ``index.txt`` and ``serial`` files act as a flat file database to
-keep track of signed certificates.
+The ``index.txt`` file acts as a flat file database to keep track of
+signed certificates.
 
 Create the root config file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,7 +81,6 @@ Create the intermediate certificate directory structure::
   mkdir certs crl csr newcerts private ext
   chmod 700 private
   touch index.txt
-  echo 1000 > serial
   echo 1000 > /certs/root/ca/intermediate/crlnumber
 
 ``crlnumber`` is used to keep track of certificate revocation lists.
@@ -127,6 +125,7 @@ Create the Intermediate Certificate
 
    cd /certs/root/ca
    openssl ca \
+     -create_serial \
      -config openssl.cnf \
      -extensions v3_intermediate_ca \
      -days 370 \
@@ -233,6 +232,7 @@ Create the server cert
 
   cd /certs/root/ca
   openssl ca \
+    -create_serial \
     -config intermediate/openssl.cnf \
     -days 375 \
     -notext \
