@@ -28,7 +28,7 @@ Create the root config file
 
 Place the `openssl.root.cnf <https://github.com/luke-powers/misc/blob/master/documentation/openssl.root.cnf>`_ file into ``/certs/root/ca as
 /certs/root/ca/openssl.cnf``. Be sure to rename the file to
-openssl.cnf when you place it into the directory See `this page
+openssl.cnf when you place it into the directory. See `this page
 <https://jamielinux.com/docs/openssl-certificate-authority/create-the-root-pair.html#prepare-the-configuration-file>`_
 for an explanation for various sections.
 
@@ -48,6 +48,7 @@ Create the root certificate
 
   cd /certs/root/ca
   openssl req \
+    -batch \
     -config openssl.cnf \
     -key private/companyCA.key \
     -new \
@@ -58,8 +59,7 @@ Create the root certificate
     -out certs/companyCA.cert
 
 This will ask for a passphrase. Use the passphrase for *root* that is
-stored in lastpass. For all the requested info, just use the defaults
-that are provided from the conf file.
+stored in lastpass.
 
 Verify the root cert
 ~~~~~~~~~~~~~~~~~~~~
@@ -103,20 +103,21 @@ Create the intermediate key
 This will ask you for a passphrase. Use the passphrase for the
 *intermediate* key that is stored in lastpass.
 
-Create the Certificate Signing Request (CSR)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create the Intermediate Certificate Signing Request (CSR)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ::
 
   cd /certs/root/ca
   openssl req \
+    -batch \
     -config intermediate/openssl.cnf \
     -new \
     -sha256 \
     -key intermediate/private/companyICA.key \
     -out intermediate/csr/companyICA.csr
 
-This will ask for the intermediate passphrase which is stored in
-lastpass. Use the defaults for the rest of the requested information.
+This will ask for the *intermediate* passphrase which is stored in
+lastpass.
 
 Create the Intermediate Certificate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -177,6 +178,23 @@ Create the server key
   openssl genrsa -out intermediate/private/site-wide.key 2048
   chmod 400 intermediate/private/site-widekey
 
+Create the server Certificate Signing Request (CSR)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+::
+
+  cd /certs/root/ca
+  openssl req \
+    -batch \
+    -config intermediate/openssl.cnf \
+    -key intermediate/private/company.key \
+    -new \
+    -sha256 \
+    -out intermediate/csr/company.csr
+
+This wont ask for a passphrase as the server key was not created with
+a passphrase (it is possible to create it with a passphrase by using
+-aes256, but it greatly complicates the installation step).
+
 Create the extension file for the particular server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -216,22 +234,6 @@ ns1.service. Place the edited extension file into
 ``/certs/root/ca/intermediate/ext``. For example, the above extension
 file is ``/certs/root/ca/intermediate/ext/site-wide.ext``.
 
-Create the server Certificate Signing Request (CSR)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-::
-
-  cd /certs/root/ca
-  openssl req \
-    -config intermediate/openssl.cnf \
-    -key intermediate/private/company.key \
-    -new \
-    -sha256 \
-    -out intermediate/csr/company.csr
-
-This will ask for a set of information, just use the defaults from the
-config file.
-
-
 Create the server cert
 ~~~~~~~~~~~~~~~~~~~~~~
 ::
@@ -255,7 +257,7 @@ Verify the cert
 ~~~~~~~~~~~~~~~
 ::
 
-  openssl x509 -noout -text -in intermediate/certs/site-wide.cert
+ openssl x509 -noout -text -in intermediate/certs/site-wide.cert
 
 The issuer should be the info for the intermediate CA. The subject
 should be the info for the certificate itself.
