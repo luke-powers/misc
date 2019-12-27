@@ -81,8 +81,8 @@ It can be tested with::
 
 Finally (optionally) install `LAM <https://www.techrepublic.com/article/how-to-install-ldap-account-manager-on-ubuntu-18-04/>`_. It makes creating and editing users very easy.
 
-LDAP Client
-===========
+LDAP Client Interactive
+=======================
 
 Install needed libraries::
 
@@ -121,4 +121,18 @@ Edit ``/etc/pam.d/common-passwordand`` remove ``use_authtok`` from the following
 Edit ``/etc/pam.d/common-session`` and add the following line::
 
   session optional pam_mkhomedir.so skel=/etc/skel umask=077
+  
+Restart the server::
 
+  sudo /etc/init.d/nscd restart
+
+LDAP Client Interactive
+=======================
+::
+
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install libnss-ldap libpam-ldap ldap-utils nscd -y
+  sudo sed -i -e "/base dc=example/c\base dc=your,dc=example,dc=com" -e "s+uri ldapi:///+uri ldap://10.191.4.2/+g" -e "/rootbinddn /c\rootbinddn cn=admin,dc=your,dc=example,dc=com" /etc/ldap.conf
+  sudo sed -i -e '/^passwd: / s/$/ ldap/' -e '/^group: / s/$/ ldap/' -e '/^shadow: / s/$/ ldap/' /etc/nsswitch.conf
+  sudo sed -i '/pam_ldap.so/s/ use_authtok//' /etc/pam.d/common-password
+  sudo sed -i '/# end of pam/i session optional\tpam_mkhomedir.so\tskel=/etc/skel\tumask=077' /etc/pam.d/common-session
+  sudo /etc/init.d/nscd restart
