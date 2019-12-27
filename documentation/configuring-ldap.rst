@@ -126,8 +126,8 @@ Restart the server::
 
   sudo /etc/init.d/nscd restart
 
-LDAP Client Interactive
-=======================
+LDAP Client Scripted
+====================
 ::
 
   sudo DEBIAN_FRONTEND=noninteractive apt-get install libnss-ldap libpam-ldap ldap-utils nscd -y
