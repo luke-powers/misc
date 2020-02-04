@@ -31,7 +31,7 @@ process-args () {
             -h | --help) echo "$USAGE"; exit 1 ;;
             --test-set) TEST_VAR="$2"; shift 2 ;;
             --test-flag) FLAG=true; shift 1 ;;
-            --) TEST_ARG="$2"; shift ;;
+            --) TEST_ARG="$2"; shift 2 ;;
             *) REST="$@"; check-rest ; break ;;
         esac
     done
