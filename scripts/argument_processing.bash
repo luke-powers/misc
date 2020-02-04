@@ -14,7 +14,7 @@ Arguments:
 
 check-rest () {
     if [[ -n "$REST" ]] ; then
-        echo "$NAME: Unknown argument $REST" >&2
+        echo "$NAME: Unknown argument '$REST'" >&2
         exit 1
     fi
 }
@@ -22,19 +22,32 @@ check-rest () {
 process-args () {
     ARGS="$(getopt \
                 -o h \
-                -l help,test: \
-                -n "$NAME" -- "$1")"
-    if [[ $? =! 0 ]] ; then exit 1; fi
+                -l help,test-set:,test-flag \
+                -n "$NAME" -- "$@")"
+    if [[ $? != 0 ]] ; then exit 1; fi
     eval set -- "$ARGS"
     while true; do
         case "$1" in
             -h | --help) echo "$USAGE"; exit 1 ;;
             --test-set) TEST_VAR="$2"; shift 2 ;;
             --test-flag) FLAG=true; shift 1 ;;
-            --) TEST_ARG="$2"; shift 2 ;;
-            *) REST="$@"; check-rest ; break ;;
+            --) if [[ "z$2" != "z" ]] ; then
+                    TEST_ARG="$2"; shift 2
+                else
+                    shift 1
+                fi ;;
+            *) REST="$*"; check-rest ; break ;;
         esac
     done
+    if [[ "z$TEST_VAR" != "z" ]] ; then
+        echo "TEST_VAR $TEST_VAR"
+    fi
+    if [[ $FLAG ]] ; then
+        echo "test-flag raised"
+    fi
+    if [[ "z$TEST_ARG" != "z" ]] ; then
+        echo "test arg $TEST_ARG"
+    fi
 }
 
-process-args "$BASH_ARGV"
+process-args "${ARGS[@]}"
