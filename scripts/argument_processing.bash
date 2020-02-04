@@ -23,7 +23,7 @@ process-args () {
     ARGS="$(getopt \
                 -o h \
                 -l help,test: \
-                -n "$NAME" -- "$BASH_ARGV")"
+                -n "$NAME" -- "$1")"
     if [[ $? =! 0 ]] ; then exit 1; fi
     eval set -- "$ARGS"
     while true; do
@@ -37,4 +37,4 @@ process-args () {
     done
 }
 
-process-args
+process-args "$BASH_ARGV"
