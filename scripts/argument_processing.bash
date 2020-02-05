@@ -1,6 +1,5 @@
 #!/bin/bash
 
-ARGS=("$@")  # Easier than trying to reverse $BASH_ARGV
 NAME=$(basename "$0")
 USAGE="Usage: $NAME [OPTION..]
 Argument processing template
@@ -50,4 +49,4 @@ process-args () {
     fi
 }
 
-process-args "${ARGS[@]}"
+process-args "$@"
