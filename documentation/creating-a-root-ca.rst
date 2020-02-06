@@ -16,7 +16,7 @@ Create root certificate directory structure::
 
   mkdir /certs/root/ca
   cd /certs/root/ca
-  mkdir certs crl newcerts private
+  mkdir certs crl csr newcerts private
   chmod 700 private
   touch index.txt
 
@@ -70,7 +70,7 @@ Verify the root cert
 
 See `this page <https://jamielinux.com/docs/openssl-certificate-authority/create-the-root-pair.html#verify-the-root-certificate>`_ for an explanation of the output.
 
-Create the intermediate CA
+Create the Intermediate CA
 --------------------------
 
 Create the intermediate certificate directory structure::
