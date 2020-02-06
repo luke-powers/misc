@@ -124,16 +124,16 @@ Create the Intermediate Certificate
 ::
 
    cd /certs/root/ca
-   openssl ca \
-     -create_serial \
-     -config openssl.cnf \
-     -extensions v3_intermediate_ca \
-     -days 370 \
-     -notext \
-     -md sha256 \
-     -in intermediate/csr/companyICA.csr \
-     -out intermediate/certs/companyICA.cert
-   chmod 444 intermediate/certs/companyICA.cert
+   openssl x509 \
+     -req \
+     -days 375 \
+     -sha256 \
+     -in csr/misoroboticsICA.csr \
+     -out intermediate/certs/companyICA.cert \
+     -extfile ext/companyICA.ext \
+     -CA certs/companyCA.cert \
+     -CAkey private/companyCA.key \
+     -CAcreateserial
 
 This will ask for the *root* passphrase which is stored in lastpass.
 
@@ -215,18 +215,15 @@ created for the top level name servers using the following extension::
   DNS.1 = ns-primary.internal.company.com
   DNS.2 = ns-primary.company
   DNS.3 = ns-primary
-  DNS.4 = ns1.k1.internal.company.com
-  DNS.5 = ns1.k1.company
-  DNS.6 = ns1.k1
+  DNS.4 = ns1.subdomain.internal.company.com
+  DNS.5 = ns1.subdomain.company
+  DNS.6 = ns1.subdomain
   DNS.7 = ns1.dev.internal.company.com
   DNS.8 = ns1.dev.company
   DNS.9 = ns1.dev
   DNS.10 = ns1.service.internal.company.com
   DNS.11 = ns1.service.company
   DNS.12 = ns1.service
-  DNS.13 = ns1.cali.internal.company.com
-  DNS.14 = ns1.cali.company
-  DNS.15 = ns1.cali
 
 This allows the resulting cert to work if used with either
 ns1.service.internal.company.com or the shorter name
@@ -239,15 +236,16 @@ Create the server cert
 ::
 
   cd /certs/root/ca
-  openssl ca \
-    -create_serial \
-    -config intermediate/openssl.cnf \
-    -days 375 \
-    -notext \
-    -md sha256 \
-    -in intermediate/csr/site-wide.csr \
-    -out intermediate/certs/site-wide.cert \
-    -extfile intermediate/ext/site-wide.ext
+  openssl x509 \
+  -req \
+  -days 375 \
+  -sha256 \
+  -in intermediate/csr/site-wide.csr \
+  -out intermediate/certs/site-wide.cert \
+  -extfile intermediate/ext/site-wide.ext \
+  -CA intermediate/certs/companyICA.cert \
+  -CAkey intermediate/private/companyICA.key \
+  -CAcreateserial \
   chmod 444 intermediate/certs/site-wide.cert
 
 This will ask for a set of information, just use the defaults from the
