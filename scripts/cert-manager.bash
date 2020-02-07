@@ -7,16 +7,17 @@ INTERMEDIATE_CA=${INTERMEDIATE_CA:=intermediate.ica.cert}
 INTERMEDIATE_CA_KEY=${INTERMEDIATE_CA_KEY:=intermediate.ica.key}
 EXISTING_CERTS=.existing_certs
 NAME=$(basename "$0")
-SHOW=false
+CREATE=false
+CREATED_FILES=()
 CLEAN=false
 PASSED_PATH=
 
-USAGE="Usage: $NAME [--clean|--iname|--show] [root-path]
-A Certificate Generator
+USAGE="Usage: $NAME [--clean|--create] [root-path]
+A Certificate Manager
 Arguments:
  -h                show this text
  --clean           Remove all certs and keys (leaves ext files)
- --show            Show created certs
+ --create          Create the certs for the given ext files
  root-path         Path to root ca ($ROOT_CERTS_DIR)
 "
 
@@ -32,12 +33,14 @@ check-rest () {
 }
 
 cleanup() {
-    rm -vf "${created_files[@]}"
+    rm -vf "${CREATED_FILES[@]}"
 }
 
-create-certs () {
+create-cert () {
+    # Create the specific x509 cert, assumes required files are
+    # pre-existing.
     CERT_NAME=$1
-    created_files+=($INTERMEDIATE_DIR"/certs/$CERT_NAME.cert")
+    CREATED_FILES+=("$INTERMEDIATE_DIR/certs/$CERT_NAME.cert")
     openssl x509 \
             -req \
             -days 375 \
@@ -52,9 +55,41 @@ create-certs () {
     chmod 600 "$INTERMEDIATE_DIR/certs/$CERT_NAME.cert"
 }
 
+create-certs () {
+    # Create the certificate for the specified ext files as well as
+    # all intermediate files required to generate the certificates.
+
+    if ! [[ $(find "$ROOT_CERTS_DIR/" -mindepth 1 -print 2>/dev/null) ]]
+    then
+        echo -e "Expected certificate directory layout not found in " \
+             "$(realpath -m "$ROOT_CERTS_DIR").\nCorrect and try again."
+        exit
+    fi
+
+    pre-checks-exit 'ls '"$INTERMEDIATE_DIR"'/ext'
+
+    CREATED_FILES=()
+    for i in $INTERMEDIATE_DIR/ext/* ; do
+        FILENAME="${i##*/}"
+        CERT_NAME="${FILENAME%.*}"
+        if [[ -s "$INTERMEDIATE_DIR/certs/$CERT_NAME.cert" ]] ; then
+            echo "Cert '$CERT_NAME.cert' already exists."
+        else
+            echo -e "Creating '$CERT_NAME.cert'.\n"
+            # Create key
+            create-keys "$CERT_NAME"
+            # Create CSR
+            create-csr "$CERT_NAME"
+            # Create certificate
+            create-cert "$CERT_NAME"
+        fi
+    done
+    update-certs-file-list
+}
+
 create-csr () {
     CERT_NAME=$1
-    created_files+=($INTERMEDIATE_DIR"/csr/$CERT_NAME.csr")
+    CREATED_FILES+=("$INTERMEDIATE_DIR/csr/$CERT_NAME.csr")
     openssl req \
             -batch \
             -config "$INTERMEDIATE_DIR/openssl.cnf" \
@@ -68,7 +103,7 @@ create-csr () {
 
 create-keys () {
     CERT_NAME=$1
-    created_files+=($INTERMEDIATE_DIR"/private/$CERT_NAME.key")
+    CREATED_FILES+=("$INTERMEDIATE_DIR/private/$CERT_NAME.key")
     openssl genrsa -out "$INTERMEDIATE_DIR/private/$CERT_NAME.key" 2048
     exit-check
     chmod 600 "$INTERMEDIATE_DIR/private/$CERT_NAME.key"
@@ -89,15 +124,15 @@ exit-check() {
 }
 
 get-existing-certs() {
-    # Loads existing certs into the $created_files variable.
+    # Loads existing certs into the $CREATED_FILES variable.
     ret=0
     if [[ -s "$ROOT_CERTS_DIR/$EXISTING_CERTS" ]] ; then
-         readarray -t created_files < "$ROOT_CERTS_DIR/$EXISTING_CERTS"
+         readarray -t CREATED_FILES < "$ROOT_CERTS_DIR/$EXISTING_CERTS"
     else
-        echo "No certs created for $ROOT_CERTS_DIR/$EXISTING_CERTS"
+        echo "No existing certificate files for"\
+             "$(realpath -m "$ROOT_CERTS_DIR/$EXISTING_CERTS")"
         ret=1
     fi
-
     return $ret
 }
 
@@ -105,42 +140,10 @@ join() {
     local IFS="$1"; shift; echo "$*"
 }
 
-main() {
-    process-args "$@"
-
-    if ! [[ $(find "$ROOT_CERTS_DIR/" -mindepth 1 -print 2>/dev/null) ]]
-    then
-        echo -e "Expected certificate directory layout not found in " \
-             "$ROOT_CERTS_DIR.\nCorrect and try again."
-        exit
-    fi
-
-    pre-checks-exit 'ls '"$INTERMEDIATE_DIR"'/ext'
-
-    created_files=()
-
-    for i in $INTERMEDIATE_DIR/ext/* ; do
-        FILENAME="${i##*/}"
-        CERT_NAME="${FILENAME%.*}"
-        if [[ -s "$INTERMEDIATE_DIR/certs/$CERT_NAME.cert" ]] ; then
-            echo "Cert '$CERT_NAME.cert' already exists."
-        else
-            echo -e "Creating '$CERT_NAME.cert'.\n"
-            # Create key
-            create-keys "$CERT_NAME"
-            # Create CSR
-            create-csr "$CERT_NAME"
-            # Create certificate
-            create-certs "$CERT_NAME"
-        fi
-    done
-    update-certs-file-list "${created_files[@]}"
-}
-
-process-args () {
+main () {
     ARGS="$(getopt \
                 -o h \
-                -l clean,help,show \
+                -l clean,create,help \
                 -n "$NAME" -- "$@")"
     if [[ $? != 0 ]] ; then exit 1; fi
     eval set -- "$ARGS"
@@ -148,7 +151,7 @@ process-args () {
         case "$1" in
             -h | --help) echo "$USAGE"; exit 1 ;;
             --clean) CLEAN=true; shift ;;
-            --show) SHOW=true; shift ;;
+            --create) CREATE=true; shift ;;
             --) if [[ "z$2" != "z" ]] ; then
                     PASSED_PATH="$2"; shift 2
                 else
@@ -159,15 +162,13 @@ process-args () {
     done
 
     if [[ "z$PASSED_PATH" != "z" ]] ; then
-        echo "old path $ROOT_CERTS_DIR"
+        echo "Old path $(realpath -m "$ROOT_CERTS_DIR")"
         ROOT_CERTS_DIR=$PASSED_PATH
         INTERMEDIATE_DIR=$ROOT_CERTS_DIR/intermediate
-        echo "new path $ROOT_CERTS_DIR"
+        echo "New path $(realpath -m "$ROOT_CERTS_DIR")"
     fi
-    if [[ $SHOW = true ]] ; then
-        if [[ -s "$ROOT_CERTS_DIR/$EXISTING_CERTS" ]] ; then
-            tr ' ' '\n' < "$ROOT_CERTS_DIR/$EXISTING_CERTS"
-        fi
+    if [[ $CREATE = true ]] ; then
+        create-certs
         exit
     fi
     if [[ $CLEAN = true ]] ; then
@@ -175,7 +176,8 @@ process-args () {
             echo "No files to remove in $ROOT_CERTS_DIR."
             exit
         fi
-        printf "Really remove all certs? (y/n)"
+        echo "Really remove all certs and associated files" \
+             "for $(realpath -m "$ROOT_CERTS_DIR")? (y/n)"
         read CONFIRM
         if [[ "$CONFIRM" = "y" ]] ; then
             cleanup
@@ -185,6 +187,13 @@ process-args () {
             echo "Not removing certs."
             exit
         fi
+    fi
+    if [[ -s "$ROOT_CERTS_DIR/$EXISTING_CERTS" ]] ; then
+        echo "Existing certs and associated files "\
+             "for ""$(realpath -m "$ROOT_CERTS_DIR"):"
+        tr ' ' '\n' < "$ROOT_CERTS_DIR/$EXISTING_CERTS"
+    else
+        echo "No existing certificate files found."
     fi
 }
 
