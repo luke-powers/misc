@@ -189,13 +189,12 @@ process-args () {
 }
 
 update-certs-file-list () {
-    all_certs_list="$*"
     if [[ -s "$ROOT_CERTS_DIR/$EXISTING_CERTS" ]] ; then
-        NEW_CERTS=("${all_certs_list[@]}")
+        new_certs=("${CREATED_FILES[@]}")
         get-existing-certs
-        all_certs_list=("${NEW_CERTS[@]}" "${created_files[@]}")
+        CREATED_FILES=("${new_certs[@]}" "${CREATED_FILES[@]}")
     fi
-    join $'\n' "${all_certs_list[@]}" > "$ROOT_CERTS_DIR/$EXISTING_CERTS"
+    join $'\n' "${CREATED_FILES[@]}" > "$ROOT_CERTS_DIR/$EXISTING_CERTS"
 }
 
 main "$@"
