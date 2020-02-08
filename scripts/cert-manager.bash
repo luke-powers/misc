@@ -75,7 +75,7 @@ create-certs () {
         if [[ -s "$INTERMEDIATE_DIR/certs/$CERT_NAME.cert" ]] ; then
             echo "Cert '$CERT_NAME.cert' already exists."
         else
-            echo -e "Creating '$CERT_NAME.cert'.\n"
+            echo -e "\nCreating '$CERT_NAME.cert'.\n"
             # Create key
             create-keys "$CERT_NAME"
             # Create CSR
@@ -189,8 +189,8 @@ main () {
         fi
     fi
     if [[ -s "$ROOT_CERTS_DIR/$EXISTING_CERTS" ]] ; then
-        echo "Existing certs and associated files "\
-             "for ""$(realpath -m "$ROOT_CERTS_DIR"):"
+        echo "Existing certs and associated files"\
+             "for $(realpath -m "$ROOT_CERTS_DIR"):"
         tr ' ' '\n' < "$ROOT_CERTS_DIR/$EXISTING_CERTS"
     else
         echo "No existing certificate files found."
