@@ -121,6 +121,8 @@ Edit ``/etc/pam.d/common-passwordand`` remove ``use_authtok`` from the following
 Edit ``/etc/pam.d/common-session`` and add the following line::
 
   session optional pam_mkhomedir.so skel=/etc/skel umask=077
+
+Create the file ``/etc/ldap.secret`` and put in it the ldap admin password from lastpass.
   
 Restart the server::
 
