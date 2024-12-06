@@ -610,4 +610,99 @@ whitespace-line-column 88)
                                           (state . 5) (ppid . number)
                                           (pgrp . number)
                                           (ttname . string)
-                                          (ti
+                                          (time . tramp-ps-time)
+                                          (nice . number)
+                                          (etime . tramp-ps-time)
+                                          (args)))
+     (tramp-connection-local-bsd-ps-profile
+      (tramp-process-attributes-ps-args "-acxww" "-o"
+                                        "pid,euid,user,egid,egroup,comm=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                        "-o"
+                                        "state,ppid,pgid,sid,tty,tpgid,minflt,majflt,time,pri,nice,vsz,rss,etimes,pcpu,pmem,args")
+      (tramp-process-attributes-ps-format (pid . number)
+                                          (euid . number)
+                                          (user . string)
+                                          (egid . number)
+                                          (group . string) (comm . 52)
+                                          (state . string)
+                                          (ppid . number)
+                                          (pgrp . number)
+                                          (sess . number)
+                                          (ttname . string)
+                                          (tpgid . number)
+                                          (minflt . number)
+                                          (majflt . number)
+                                          (time . tramp-ps-time)
+                                          (pri . number)
+                                          (nice . number)
+                                          (vsize . number)
+                                          (rss . number)
+                                          (etime . number)
+                                          (pcpu . number)
+                                          (pmem . number) (args)))
+     (tramp-connection-local-default-shell-profile
+      (shell-file-name . "/bin/sh") (shell-command-switch . "-c"))
+     (tramp-connection-local-default-system-profile
+      (path-separator . ":") (null-device . "/dev/null"))
+     (eshell-connection-default-profile (eshell-path-env-list))))
+ '(elpy-rpc-timeout nil)
+ '(flycheck-python-pycompile-executable "python3")
+ '(magit-log-margin '(t "%Y-%m-%dT%H " magit-log-margin-width t 18))
+ '(markdown-command "/usr/bin/pandoc")
+ '(package-selected-packages
+   '(auto-dim-other-buffers cargo-mode company-go company-jedi counsel
+                            counsel-codesearch counsel-pydoc
+                            counsel-tramp dart-mode
+                            docker-compose-mode docker-tramp
+                            dockerfile-mode elpy emacsql
+                            emacsql-sqlite emmet-mode eslint-fix
+                            flx-ido flycheck-pkg-config
+                            flycheck-pycheckers flycheck-pyflakes
+                            flymake-yaml flymake-yamllint
+                            font-lock-studio forge git-timemachine
+                            go-guru go-mode golint gore-mode guru-mode
+                            highlight highlight-indentation hover ivy
+                            ivy-hydra js2-mode linum-relative
+                            lorem-ipsum lsp-dart lsp-mode
+                            lsp-tailwindcss magit magit-gh-pulls
+                            multi-term multiple-cursors perspective
+                            py-isort pyenv-mode python-test rust-mode
+                            smart-tab smart-tabs-mode swiper web-mode
+                            xml-rpc yasnippet))
+ '(python-shell-completion-native-disabled-interpreters '("pypy" "ipython" "python"))
+ '(python-shell-interpreter "python3")
+ '(term-bind-key-alist
+   '(("C-c C-c" . term-interrupt-subjob)
+     ("C-c C-j" . term-line-mode)
+     ("C-c C-k" . term-char-mode)
+     ("C-c ESC" . term-send-esc)
+     ("C-k" . term-send-kill-line)
+     ("C-m" . term-send-return)
+     ("C-r" . term-send-reverse-search-history)
+     ("C-s" . isearch-forward)
+     ("C-y" . term-paste)
+     ("C-z" . term-stop-subjob)
+     ("C-M-y" . term-primary-paster)
+     ("<C-backspace>" . term-send-backward-kill-word)
+     ("M-f" . term-send-forward-word)
+     ("M-b" . term-send-backward-word)
+     ("M-p" . term-send-up)
+     ("C-p" . term-send-up)
+     ("M-n" . term-send-down)
+     ("M-M" . term-send-forward-kill-word)
+     ("M-N" . term-send-backward-kill-word)
+     ("M-d" . term-send-delete-word)
+     ("<M-backspace>" . term-send-backward-kill-word)
+     ("M-," . term-send-raw)
+     ("M-." . comint-dynamic-complete))))
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 120 :width normal :foundry "DAMA" :family "Ubuntu Mono"))))
+ '(auto-dim-other-buffers-face ((t (:background "#abb"))))
+ '(font-lock-variable-name-face ((t (:foreground "black")))))
+(put 'magit-clean 'disabled nil)
+(put 'erase-buffer 'disabled nil)
